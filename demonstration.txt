@@ -1,0 +1,28 @@
+demonstration:
+m = 320
+n = 640
+
+i = 1
+j = 1
+
+outer for loop 1st iter:
+    inner for loop 1st iter:
+        temp = 
+
+
+
+i-1, j-1 
+i j-1
+i+1 j-1
+
+
+i-1, j
+i, j
+i+1, j
+
+i-1, j+1
+i, j+1
+i+1, j+1
+
+
+
