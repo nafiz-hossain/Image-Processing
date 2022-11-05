@@ -1,6 +1,8 @@
-demonstration:
+demonstration of grayscale image:
+2D array.
 m = 320
 n = 640
+
 
 i = 1
 j = 1
@@ -10,10 +12,24 @@ outer for loop 1st iter:
         temp = 
 
 
+0 0 0 0
+0 p 0 0
+0 0 0 0
 
-i-1, j-1 
+0, 0, 0, 0, 63, 69, 0, 71, 70 = median 0
+0, 0, 0, 63, 69, 76, 71, 70, 73 = median 69
+0, 0, 0, 69, 76, 68, 70, 73, 65 = median 68
+TEMPFORBLUE [63, 69, 76, 71, 70, 73, 72, 77, 67]
+new b = [[0 69 68 ]
+
+]
+
+
+i-1, j-1    
 i j-1
 i+1 j-1
+
+
 
 
 i-1, j
@@ -26,3 +42,16 @@ i+1, j+1
 
 
 
+demonstration of colored image:
+3D array:
+i = 1
+j = 1
+k = 1
+outer for loop 1st iter:
+    outer inner for loop 1st iter:
+        inner for loop 1st iter:
+            temp = 
+
+
+i-1, j-1, z
+i-1, j, z
