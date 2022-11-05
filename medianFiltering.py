@@ -33,7 +33,6 @@ def medianFiltering(m,n,old,new):
             old[i-1, j],
             old[i-1, j+1],
             old[i, j-1],
-            old[i, j],
             old[i, j+1],
             old[i+1, j-1],
             old[i+1, j],
