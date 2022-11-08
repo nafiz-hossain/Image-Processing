@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-import statistics 
-
+import statistics
+import os
 
 # enum cv::ImreadModes {
 #   cv::IMREAD_UNCHANGED = -1,
@@ -26,7 +26,7 @@ import statistics
 #Channels refer to the number of colors. For example, there are three channels in a RGB image, the Red Channel, the Green Channel and the Blue Channel. Each of the channels in each pixel represents the intensity of each color that constitute that pixel.
 
 
-def medianFiltering(m,n,old,new):
+def medianFilteringThreeByThree(m,n,old,new):
     for i in range(1, m+1):
         for j in range(1, n+1):
             temp = [ old[i-1, j-1],
@@ -47,40 +47,132 @@ def medianFiltering(m,n,old,new):
     final= new[1:m+1 , 1:n+1]
     return final
 
+def medianFilteringFiveByFive(m,n,old,new):
+    for i in range(2, m+2):
+        for j in range(2, n+2):
+            temp = [ old[i-2, j-2],
+            old[i-2, j-1],
+            old[i-2, j],
+            old[i-2, j+1],
+            old[i-2, j+2],
+            old[i-1, j-2],
+            old[i-1, j-1],
+            old[i-1, j],
+            old[i-1, j+1],
+            old[i-1, j+2],
+
+            old[i, j-2],
+            old[i, j-1],
+            old[i, j+1],
+            old[i, j+2],
+
+            old[i+1, j-2],
+            old[i+1, j-1],
+            old[i+1, j],
+            old[i+1, j+1],
+            old[i+1, j+2],
+            old[i+2, j-2],
+            old[i+2, j-1],
+            old[i+2, j],
+            old[i+2, j+1],
+            old[i+2, j+2],
+            ]
+            #print('Every temp: ', temp)
+            temp = statistics.median(temp)
+            #print('statistics.median(temp): ', temp)
+            new[i, j]= temp
+
+    #astype returns a new DataFrame where the data types has been changed to the specified type
+    #numpy.uint8: 8-bit unsigned integer (0 to 255).
+    new = new.astype(np.uint8)
+    final= new[2:m+2 , 2:n+2]
+    return new
+
+
+# def medianFilteringSevenBySeven(m,n,old,new):
+#     for i in range(1, m+1):
+#         for j in range(1, n+1):
+#             temp = [ old[i-1, j-1],
+#             old[i-1, j],
+#             old[i-1, j+1],
+#             old[i, j-1],
+#             old[i, j+1],
+#             old[i+1, j-1],
+#             old[i+1, j],
+#             old[i+1, j+1],
+#             ]
+#             temp = statistics.median(temp)
+#             new[i, j]= temp
+
+#     #astype returns a new DataFrame where the data types has been changed to the specified type
+#     #numpy.uint8: 8-bit unsigned integer (0 to 255).
+#     new = new.astype(np.uint8)
+#     final= new[1:m+1 , 1:n+1]
+#     return final
+
+
 
 def main():
+    print(os.path.exists('samplev2.png'))    
     #take input by cv2
     img_input = cv2.imread('samplee.png', 1)
     m, n, c = img_input.shape
+    matrix_size = 5
 
-    # print('input image shape', img_input.shape)
-    # print('m= ', m)
-    # print('n= ', n)
-    # print('c= ', c)
+    print('input image shape', img_input.shape)
+    print('Input Image', img_input)
 
-    updatedImage = np.array([[[0]*3]*(n+2)]*(m+2))
-    # print('updatedImage shape', updatedImage.shape)
-    # print('updatedImage after declaring np array', updatedImage)
+    print('m= ', m)
+    print('n= ', n)
+    print('c= ', c)
+
+    if (matrix_size==3):
+        updatedImage = np.array([[[0]*3]*(n+2)]*(m+2))
+    if (matrix_size==5):
+        updatedImage = np.array([[[0]*3]*(n+4)]*(m+4))
+    
+    
+    print('updatedImage shape', updatedImage.shape)
+    print('updatedImage after declaring np array', updatedImage)
+
+    if (matrix_size==3):
+        updatedImage[1:m+1 , 1:n+1, :] = img_input
+        b_new = np.zeros([m+2, n+2])
+        g_new = np.zeros([m+2, n+2])
+        r_new = np.zeros([m+2, n+2])
 
 
-    updatedImage[1:m+1 , 1:n+1, :] = img_input
+    if (matrix_size==5):
+        updatedImage[2:m+2 , 2:n+2, :] = img_input
+        b_new = np.zeros([m+4, n+4])
+        g_new = np.zeros([m+4, n+4])
+        r_new = np.zeros([m+4, n+4])
 
-    #print('updatedImage after using img_input', updatedImage)
+    print('updatedImage after using img_input', updatedImage)
     b, g, r = cv2.split(updatedImage)
 
 
 
 
-    b_new = np.zeros([m+2, n+2])
-    g_new = np.zeros([m+2, n+2])
-    r_new = np.zeros([m+2, n+2])
+    print('Before sending: m,n',m,n)
 
+    print('Before sending: b',b)
 
-    b_final= medianFiltering(m,n,b,b_new)
-    g_final= medianFiltering(m,n,g,g_new)
-    r_final= medianFiltering(m,n,r,r_new)
+    print('Before sending: b_new',b_new)
 
+    if (matrix_size==3):
+        b_final= medianFilteringThreeByThree(m,n,b,b_new)
+        g_final= medianFilteringThreeByThree(m,n,g,g_new)
+        r_final= medianFilteringThreeByThree(m,n,r,r_new)
+
+    if (matrix_size==5):
+        b_final= medianFilteringFiveByFive(m,n,b,b_new)
+        g_final= medianFilteringFiveByFive(m,n,g,g_new)
+        r_final= medianFilteringFiveByFive(m,n,r,r_new)
+
+    
     final_img = cv2.merge((b_final,g_final,r_final))
+    #print('final_b ', b_final)
     cv2.imwrite('filtered.png', final_img)
     # print('Updated Image to', final_img)
     # print('b_new should be', b_final)
