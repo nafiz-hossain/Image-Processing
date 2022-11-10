@@ -4,8 +4,10 @@ import statistics
 import os
 import csv
 import time
-import pandas as pd
-import matplotlib.pyplot as plt    
+import pandas as pd  #pip install pandas
+import matplotlib.pyplot as plt   #pip install matplotlib
+
+
 # enum cv::ImreadModes {
 #   cv::IMREAD_UNCHANGED = -1,
 #   cv::IMREAD_GRAYSCALE = 0,
@@ -46,6 +48,7 @@ def medianFiltering(m,n,old,new,window_size):
                 new[i, j]= temp
                 #print('temp ', temp)
             except:
+                print('temp error for value: ', temp)
                 print('Error occurred')
      
     #astype returns a new DataFrame where the data types has been changed to the specified type
@@ -63,38 +66,13 @@ def main():
     matrix_size_array = []
     #print(os.path.exists('samplev2.png'))    
     #take input by cv2
-    img_input = cv2.imread('mediam.png', 1)
-    start_timer = int(time.time())
+    img_input = cv2.imread('samplee.png', 1)
+
+
+
     m, n, c = img_input.shape
     matrix_size = 3
-    pos= int(matrix_size/2)
 
-
-    # print('input image shape', img_input.shape)
-    # print('Input Image', img_input)
-
-    # print('m= ', m)
-    # print('n= ', n)
-    # print('c= ', c)
-
-    updatedImage = np.array([[[0]*3]*(n+(matrix_size-1))]*(m+(matrix_size-1)))
-    
-    # print('updatedImage shape', updatedImage.shape)
-    # print('updatedImage after declaring np array', updatedImage)
-
-    updatedImage[pos:m+pos , pos:n+pos, :] = img_input
-
-
-
-
-    
-    b_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
-    g_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
-    r_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
-
-
-    # print('updatedImage after using img_input', updatedImage)
-    b, g, r = cv2.split(updatedImage)
 
 
 
@@ -103,21 +81,47 @@ def main():
     # print('Before sending: b',b)
 
     # print('Before sending: b_new',b_new)
-    for outer in range(0,20,2):
+    for outer in range(0,3,2):
+        matrix_size = matrix_size + outer
+        pos= int(matrix_size/2)
+        updatedImage = np.array([[[0]*3]*(n+(matrix_size-1))]*(m+(matrix_size-1)))
+        
+        # print('updatedImage shape', updatedImage.shape)
+        # print('updatedImage after declaring np array', updatedImage)
+
+        updatedImage[pos:m+pos , pos:n+pos, :] = img_input
+
+
+
+
+        
+        b_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
+        g_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
+        r_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
+
+
+        # print('updatedImage after using img_input', updatedImage)
+        b, g, r = cv2.split(updatedImage)
+
+
         print('Outer is ',outer)
         var = matrix_size + outer
         matrix_size_array.append(var)
-
         for iter in range(loop):
             start_timer = round(time.time() * 1000)
-            b_final= medianFiltering(m,n,b,b_new,var)
-            g_final= medianFiltering(m,n,g,g_new,var)
-            r_final= medianFiltering(m,n,r,r_new,var)
+            print('b is ', b)
+            print('b_new is ', b_new)
+            
+            b_final= medianFiltering(m,n,b,b_new,matrix_size)
+            g_final= medianFiltering(m,n,g,g_new,matrix_size)
+            r_final= medianFiltering(m,n,r,r_new,matrix_size)
             stop_timer = round(time.time() * 1000)
             
             duration_in_second = stop_timer-start_timer
             duration_arr.append(duration_in_second)
         
+        print('matrix_size_array ',matrix_size_array)
+
         final_img = cv2.merge((b_final,g_final,r_final))
         # print('final_b ', b_final)
         cv2.imwrite('filtered.png', final_img)
