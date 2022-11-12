@@ -1,3 +1,4 @@
+import math
 import cv2
 import numpy as np
 import statistics
@@ -32,6 +33,10 @@ import matplotlib.pyplot as plt   #pip install matplotlib
 
 
 
+def Calculate_psnr(originalImage, filteredImage):
+    return cv2.PSNR(originalImage,filteredImage)
+
+
 def medianFiltering(m,n,old,new,window_size):
     window_half = int(window_size/2)
     for i in range(window_half, m+1):
@@ -62,24 +67,31 @@ def medianFiltering(m,n,old,new,window_size):
 
 
 def main():
-    st = round(time.time())
 
-    loop = 50
+    loop = 20
     duration_arr = []
     average_execution_time = []
     matrix_size_array = []
+    psnr_values = []
     matrix_size = 1
+    df_source1 = pd.DataFrame([])
+    df_source_psnr = pd.DataFrame([])
+
+    number_of_window = 10
+
     # outer_v2 = []
 
 
     #print(os.path.exists('samplev2.png'))    
     #take input by cv2
-    img_input = cv2.imread('mediam.png', 1)
+    img_input = cv2.imread('sample_noise_1.png', 1)
+    img_original = cv2.imread('sample_original_1.png', 1)
+
     m, n, c = img_input.shape
 
 
 
-    for outer in range(0,10):
+    for outer in range(0,number_of_window):
         # outer_v2.append(outer)
         matrix_size = matrix_size + 2
         pos = int(matrix_size/2)
@@ -102,14 +114,13 @@ def main():
         # print('updatedImage after using img_input', updatedImage)
         b, g, r = cv2.split(updatedImage)
         
-
+        filename = str(matrix_size) + 'x' + str(matrix_size)
         print('Outer is ',outer)
         matrix_size_array.append(matrix_size)
         duration_arr.clear()
         for iter in range(loop):
             start_timer = round(time.time() * 1000)
-            print('b is ', b)
-            print('b_new is ', b_new)
+            print(f'Running loop number: {iter}, window size {matrix_size}')
             
             b_final= medianFiltering(m,n,b,b_new,matrix_size)
             g_final= medianFiltering(m,n,g,g_new,matrix_size)
@@ -120,27 +131,32 @@ def main():
             duration_arr.append(duration_in_second)
         
 
-        average_execution_time.append(np.average(duration_arr))
+        average_execution_time.append(np.average(duration_arr)/1000)
 
         final_img = cv2.merge((b_final,g_final,r_final))
         # print('final_b ', b_final)
-        #cv2.imwrite('filtered.png', final_img)
-
+        # cv2.imwrite('filtered.png', final_img)
+        cv2.imwrite('filtered_%s.png'%filename, final_img)
+        psnr_values.append(Calculate_psnr(img_original, final_img))
 
         print('##Duration##',duration_arr)
         #print('##matrix_size_array##',matrix_size_array)
 
         #csv part
         column_name =   str(matrix_size) + 'x' + str(matrix_size)
-        df_source1 = pd.read_csv('source.csv',header=None) 
-        
+        # df_source1 = pd.read_csv('source.csv',header=None) 
 
-        df_source1[column_name]=pd.Series(average_execution_time)
-        df_source1 = df_source1.iloc[: , 1:]
-        df_source1 = df_source1.dropna()
-        df_source1.to_csv('output.csv',index=False)
+        df_source1[column_name]=pd.Series(np.average(duration_arr)/1000)
+        df_source_psnr[column_name]=pd.Series(psnr_values)
+
+        # df_source1 = df_source1.iloc[: , 1:]
         
-        print(df_source1)
+    df_source1 = df_source1.dropna()
+    df_source1.to_csv('output.csv',index=False)
+    df_source_psnr = df_source1.dropna()
+    df_source_psnr.to_csv('psnr_output.csv',index=False)
+    print(df_source1)
+
     print('##matrix_size_array##',matrix_size_array)
     # print('### Outer is ###', outer_v2)
     print('Average execution time ', average_execution_time)
@@ -155,17 +171,13 @@ def main():
 
     print('Final duration', average_execution_time)
     #print('Matrix size array', matrix_size_array)
-    stp = round(time.time())
 
-    print('### Real Execution time of the programme vs average_execution_time ###', int(stp-st), np.sum(average_execution_time))
-
-    
     plt.plot(matrix_size_array, average_execution_time, color = 'g', linestyle = 'dashed',
-            marker = 'o',label = "Average time")
+            marker = 'o',label = "Average execution time")
     
     plt.xticks(rotation = 10)
-    plt.xlabel('Matrix size')
-    plt.ylabel('Execution time (ms)')
+    plt.xlabel('Window size')
+    plt.ylabel('Average execution time (second)')
     plt.title('Median Filtering', fontsize = 20)
     plt.grid()
     plt.legend()
@@ -173,6 +185,23 @@ def main():
 
 
 
+
+    print('PSNR value is ', psnr_values)
+
+    plt.plot(matrix_size_array, psnr_values, color = 'g', linestyle = 'dashed',
+            marker = 'o',label = "PSNR values")
+    
+    plt.xticks(rotation = 10)
+    plt.xlabel('Window size')
+    plt.ylabel('PSNR values')
+    plt.title('PSNR calculation', fontsize = 20)
+    plt.grid()
+    plt.legend()
+    plt.show()
+
+
+   
+   
     # print('###time', duration_in_second)
     # print('Updated Image to', final_img)
     # print('b_new should be', b_final)
