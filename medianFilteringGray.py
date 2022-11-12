@@ -7,7 +7,7 @@ import csv
 import time
 import pandas as pd  #pip install pandas
 import matplotlib.pyplot as plt   #pip install matplotlib
-
+from traceback import print_exc
 
 # enum cv::ImreadModes {
 #   cv::IMREAD_UNCHANGED = -1,
@@ -38,6 +38,9 @@ def Calculate_psnr(originalImage, filteredImage):
 
 
 def medianFiltering(m,n,old,new,window_size):
+    old = np.array(old[0])
+    print("old image:\n",old)
+
     window_half = int(window_size/2)
     for i in range(window_half, m+1):
         for j in range(window_half, n+1):
@@ -47,6 +50,8 @@ def medianFiltering(m,n,old,new,window_size):
                 pos_c= i + window_half
                 pos_d= j + window_half
                 temp = old[pos_a:pos_c+1, pos_b:pos_d+1]
+                # print("temp: \n",temp)
+                
                 temp = temp.flatten()
                 #print('tempValue for temp', len(temp), pos_a,pos_c+1, pos_b,pos_d+1, i, j)
                 temp = np.delete(temp, int(len(temp)/2))  
@@ -54,9 +59,10 @@ def medianFiltering(m,n,old,new,window_size):
                 temp = np.median(temp)
                 new[i, j]= temp
                 #print('temp ', temp)
-            except:
-                print('temp error for value: ', temp)
-                print('Error occurred')
+            except Exception as e:
+                # print('temp error for value: ')
+                print_exc(e)
+                print('Error occurred ', e)
      
     #astype returns a new DataFrame where the data types has been changed to the specified type
     #numpy.uint8: 8-bit unsigned integer (0 to 255).
@@ -68,7 +74,7 @@ def medianFiltering(m,n,old,new,window_size):
 
 def main():
 
-    loop = 20
+    loop = 1
     duration_arr = []
     average_execution_time = []
     matrix_size_array = []
@@ -77,15 +83,15 @@ def main():
     df_source1 = pd.DataFrame([])
     df_source_psnr = pd.DataFrame([])
 
-    number_of_window = 1
+    number_of_window = 10
 
     # outer_v2 = []
 
 
     #print(os.path.exists('samplev2.png'))    
     #take input by cv2
-    img_input = cv2.imread('samplee.png', 0)
-    img_original = cv2.imread('samplee.png', 0)
+    img_input = cv2.imread('sample_noise_grayscale_1.png', 0)
+    img_original = cv2.imread('sample_original_grayscale_1.png', 0)
 
     print(img_input.shape)
     m, n = img_input.shape
@@ -99,12 +105,11 @@ def main():
         updatedImage = np.array([ [0]*(n+(matrix_size-1))]*(m+(matrix_size-1)))
         
         # print('updatedImage shape', updatedImage.shape)
-        print('updatedImage after declaring np array', updatedImage)
-
+        
         updatedImage[pos:m+pos , pos:n+pos] = img_input
 
 
-        print("dsfdfd")
+        print('updatedImage after declaring np array', updatedImage)
 
         
         b_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
