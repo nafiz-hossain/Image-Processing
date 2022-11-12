@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import math
 
 def get_median_neighbor_matrix(temp):
     W0 = temp[2,2]
@@ -51,10 +52,11 @@ def get_D_array(median_matrix):
             D.append(abs(median_matrix[i,j]-median_matrix[1,1]))  
     return D
 
-def fuzzy_inference():
+def fuzzy_inference(D,):
     noisiness = None
-    VL = 0
-    VH = 1
+    VL1, VL2, VL3, VL4, VL4, VL6, VL7, VL8, VL9, VL10, VL11, VL12, VL13, VL14, VL15, VL16 = 0
+    VH1, VH2, VH3, VH4, VH4, VH6, VH7, VH8, VH9, VH10, VH11, VH12, VH13, VH14, VH15, VH16 =1
+
     if(D[1]<127.5 and D[2]< 127.5  and D[3]<127.5 and D[4]<127.5):
         noisiness = VL
     elif(D[1]<127.5 and D[2]< 127.5  and D[3]<127.5 and D[4]>127.5):
@@ -83,7 +85,19 @@ def noise_detect(m,n,old,new,window_size):
             Darr = get_D_array( median_matrix)
 
             print("D array: ", Darr)
-            
+
+def get_difference_low_mf(x):
+    c = 0
+    s = 250
+    sub_res = 0.5*(((x-c)/s)^2)
+    return math.exp(sub_res)
+
+def get_difference_high_mf(x):
+    c = 250
+    s = 250
+    sub_res = 0.5*(((x-c)/s)^2)
+    return math.exp(sub_res)
+
 
 if __name__ == "__main__":
     
