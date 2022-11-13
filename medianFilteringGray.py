@@ -154,9 +154,9 @@ def main():
         # df_source1 = df_source1.iloc[: , 1:]
         
     df_source1 = df_source1.dropna()
-    df_source1.to_csv('output.csv',index=False)
+    df_source1.to_csv('output_gray.csv',index=False)
     df_source_psnr = df_source1.dropna()
-    df_source_psnr.to_csv('psnr_output.csv',index=False)
+    df_source_psnr.to_csv('psnr_output_gray.csv',index=False)
     print(df_source1)
 
     print('##matrix_size_array##',matrix_size_array)
