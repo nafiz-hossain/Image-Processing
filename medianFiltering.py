@@ -31,11 +31,14 @@ import matplotlib.pyplot as plt   #pip install matplotlib
 #The shape of an image is accessed by img.shape. It returns a tuple of the number of rows, columns, and channels (if the image is color): 
 #Channels refer to the number of colors. For example, there are three channels in a RGB image, the Red Channel, the Green Channel and the Blue Channel. Each of the channels in each pixel represents the intensity of each color that constitute that pixel.
 
-
+def mse(imageA, imageB):
+    err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+    err /= float(imageA.shape[0] * imageA.shape[1])
+    return err
 
 def Calculate_psnr(originalImage, filteredImage):
-    return cv2.PSNR(originalImage,filteredImage)
-
+    # return cv2.PSNR(originalImage,filteredImage)
+    return mse(originalImage, filteredImage)
 
 def medianFiltering(m,n,old,new,window_size):
     window_half = int(window_size/2)
@@ -68,7 +71,7 @@ def medianFiltering(m,n,old,new,window_size):
 
 def main():
 
-    loop = 20
+    loop = 1
     duration_arr = []
     average_execution_time = []
     matrix_size_array = []
@@ -97,9 +100,6 @@ def main():
         pos = int(matrix_size/2)
         updatedImage = np.array([[[0]*3]*(n+(matrix_size-1))]*(m+(matrix_size-1)))
         
-        # print('updatedImage shape', updatedImage.shape)
-        # print('updatedImage after declaring np array', updatedImage)
-
         updatedImage[pos:m+pos , pos:n+pos, :] = img_input
 
 
@@ -111,7 +111,6 @@ def main():
         r_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
 
 
-        # print('updatedImage after using img_input', updatedImage)
         b, g, r = cv2.split(updatedImage)
         
         filename = str(matrix_size) + 'x' + str(matrix_size)
@@ -155,11 +154,11 @@ def main():
     df_source1.to_csv('output.csv',index=False)
     df_source_psnr = df_source1.dropna()
     df_source_psnr.to_csv('psnr_output.csv',index=False)
-    print(df_source1)
+    # print(df_source1)
 
-    print('##matrix_size_array##',matrix_size_array)
+    # print('##matrix_size_array##',matrix_size_array)
     # print('### Outer is ###', outer_v2)
-    print('Average execution time ', average_execution_time)
+    # print('Average execution time ', average_execution_time)
     #visualize duration based on matrix size
     
     # with open('output.csv','r') as csvfile:
@@ -189,12 +188,12 @@ def main():
     print('PSNR value is ', psnr_values)
 
     plt.plot(matrix_size_array, psnr_values, color = 'g', linestyle = 'dashed',
-            marker = 'o',label = "PSNR values")
+            marker = 'o',label = "MSE values")
     
     plt.xticks(rotation = 10)
     plt.xlabel('Window size')
-    plt.ylabel('PSNR values')
-    plt.title('PSNR calculation', fontsize = 20)
+    plt.ylabel('MSE values')
+    plt.title('MSE calculation', fontsize = 20)
     plt.grid()
     plt.legend()
     plt.show()

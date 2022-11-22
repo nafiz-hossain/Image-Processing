@@ -31,15 +31,20 @@ from traceback import print_exc
 #The shape of an image is accessed by img.shape. It returns a tuple of the number of rows, columns, and channels (if the image is color): 
 #Channels refer to the number of colors. For example, there are three channels in a RGB image, the Red Channel, the Green Channel and the Blue Channel. Each of the channels in each pixel represents the intensity of each color that constitute that pixel.
 
-
+def mse(imageA, imageB):
+    err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+    err /= float(imageA.shape[0] * imageA.shape[1])
+    return err
 
 def Calculate_psnr(originalImage, filteredImage):
-    return cv2.PSNR(originalImage,filteredImage)
+    # return cv2.PSNR(originalImage,filteredImage)
+    return mse(originalImage, filteredImage)
+
 
 
 def medianFiltering(m,n,old,new,window_size):
     old = np.array(old[0])
-    print("old image:\n",old)
+    # print("old image:\n",old)
 
     window_half = int(window_size/2)
     for i in range(window_half, m+1):
@@ -109,7 +114,7 @@ def main():
         updatedImage[pos:m+pos , pos:n+pos] = img_input
 
 
-        print('updatedImage after declaring np array', updatedImage)
+        # print('updatedImage after declaring np array', updatedImage)
 
         
         b_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
@@ -191,12 +196,12 @@ def main():
     print('PSNR value is ', psnr_values)
 
     plt.plot(matrix_size_array, psnr_values, color = 'g', linestyle = 'dashed',
-            marker = 'o',label = "PSNR values")
+            marker = 'o',label = "MSE values")
     
     plt.xticks(rotation = 10)
     plt.xlabel('Window size')
-    plt.ylabel('PSNR values')
-    plt.title('PSNR calculation', fontsize = 20)
+    plt.ylabel('MSE values')
+    plt.title('MSE calculation', fontsize = 20)
     plt.grid()
     plt.legend()
     plt.show()

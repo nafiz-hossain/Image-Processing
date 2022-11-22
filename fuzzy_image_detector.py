@@ -2,6 +2,36 @@ import numpy as np
 import cv2
 import math
 
+def get_trapezoidal_mf(a, b, c, d):
+    temp1 = (x-a)/(b-a)
+    temp2 = (d-x)/(d-c)
+    temp3 = min([temp1,1, temp2])
+    result = max(temp3, 0)
+    return result
+
+
+def get_DL_mf(x):
+    c = 0
+    s = 250
+    sub_res = 0.5*(((x-c)/s)^2)
+    return math.exp(sub_res)
+
+def get_DH_mf(x):
+    c = 250
+    s = 250
+    sub_res = 0.5*(((x-c)/s)^2)
+    return math.exp(sub_res)
+
+
+def get_VL_mf(x):
+    a = 0
+    b = 0
+    c = 0.25
+    d = 0.75
+    
+    return reget_trapezoidal_mf(a, b, c, d)
+
+
 def get_median_neighbor_matrix(temp):
     W0 = temp[2,2]
     W1 = temp[0,0]
@@ -52,19 +82,89 @@ def get_D_array(median_matrix):
             D.append(abs(median_matrix[i,j]-median_matrix[1,1]))  
     return D
 
-def fuzzy_inference(D,):
+def fuzzy_inference(d1_mf_val_DH, d1_mf_val_DL, d2_mf_val_DH, d2_mf_val_DL, d3_mf_val_DH, d3_mf_val_DL, d4_mf_val_DH, d4_mf_val_DL):
     noisiness = None
-    VL1, VL2, VL3, VL4, VL4, VL6, VL7, VL8, VL9, VL10, VL11, VL12, VL13, VL14, VL15, VL16 = 0
-    VH1, VH2, VH3, VH4, VH4, VH6, VH7, VH8, VH9, VH10, VH11, VH12, VH13, VH14, VH15, VH16 =1
+    
+    VL_arr = []
+    VH_arr = []
+    
 
-    if(D[1]<127.5 and D[2]< 127.5  and D[3]<127.5 and D[4]<127.5):
-        noisiness = VL
-    elif(D[1]<127.5 and D[2]< 127.5  and D[3]<127.5 and D[4]>127.5):
-        noisiness = VL
-    elif(D[1]<127.5 and D[2]< 127.5  and D[3]>127.5 and D[4]<127.5):
-        noisiness = VL
-    elif(D[1]<127.5 and D[2]< 127.5  and D[3]>127.5 and D[4]>127.5):
-        noisiness = VH
+    
+    r1_strenght = min([d1_mf_val_DL, d2_mf_val_DL, d3_mf_val_DL, d4_mf_val_DL])
+    VL_arr.append(get_VL_mf(r1_strenght))
+    VH_arr.append(0)
+
+    r2_strenght = min([d1_mf_val_DL, d2_mf_val_DL, d3_mf_val_DL, d4_mf_val_DH])
+    VL_arr.append(get_VL_mf(r2_strenght))
+    VH_arr.append(0)
+
+    r3_strenght = min([d1_mf_val_DL, d2_mf_val_DL, d3_mf_val_DH, d4_mf_val_DL])
+    VL_arr.append(get_VL_mf(r3_strenght))
+    VH_arr.append(0)
+
+    r4_strenght = min([d1_mf_val_DL, d2_mf_val_DL, d3_mf_val_DH, d4_mf_val_DH])
+    VL_arr.append(get_VL_mf(r4_strenght))
+    VH_arr.append(get_VH_mf(r4_strenght))
+
+    r5_strenght = min([d1_mf_val_DL, d2_mf_val_DH, d3_mf_val_DL, d4_mf_val_DL])
+    VL_arr.append(get_VL_mf(r5_strenght))
+    VH_arr.append(0)
+
+    r6_strenght = min([d1_mf_val_DL, d2_mf_val_DH, d3_mf_val_DL, d4_mf_val_DH])
+    VL_arr.append(get_VL_mf(r6_strenght))
+    VH_arr.append(get_VH_mf(r6_strenght))
+
+    r7_strenght = min([d1_mf_val_DL, d2_mf_val_DH, d3_mf_val_DH, d4_mf_val_DL])
+    VL_arr.append(get_VL_mf(r7_strenght))
+    VH_arr.append(get_VH_mf(r7_strenght))
+
+    r8_strenght = min([d1_mf_val_DL, d2_mf_val_DH, d3_mf_val_DH, d4_mf_val_DH])
+    VL_arr.append(0)
+    VH_arr.append(get_VH_mf(r8_strenght))
+
+    r9_strenght = min([d1_mf_val_DH, d2_mf_val_DL, d3_mf_val_DL, d4_mf_val_DL])
+    VL_arr.append(get_VL_mf(r9_strenght))
+    VH_arr.append(0)
+
+    r10_strenght = min([d1_mf_val_DH, d2_mf_val_DL, d3_mf_val_DL, d4_mf_val_DH])
+    VL_arr.append(get_VL_mf(r10_strenght))
+    VH_arr.append(get_VH_mf(r10_strenght))
+
+    r11_strenght = min([d1_mf_val_DH, d2_mf_val_DL, d3_mf_val_DH, d4_mf_val_DL])
+    VL_arr.append(get_VL_mf(r11_strenght))
+    VH_arr.append(get_VH_mf(r11_strenght))
+
+    r12_strenght = min([d1_mf_val_DH, d2_mf_val_DL, d3_mf_val_DH, d4_mf_val_DH])
+    VL_arr.append(0)
+    VH_arr.append(get_VH_mf(r12_strenght))
+
+    r13_strenght = min([d1_mf_val_DH, d2_mf_val_DH, d3_mf_val_DL, d4_mf_val_DL])
+    VL_arr.append(get_VL_mf(r13_strenght))
+    VH_arr.append(get_VH_mf(r13_strenght))
+
+    r14_strenght = min([d1_mf_val_DH, d2_mf_val_DH, d3_mf_val_DL, d4_mf_val_DH])
+    VL_arr.append(0)
+    VH_arr.append(get_VH_mf(r14_strenght))
+
+    r15_strenght = min([d1_mf_val_DH, d2_mf_val_DH, d3_mf_val_DH, d4_mf_val_DL])
+    VL_arr.append(0)
+    VH_arr.append(get_VH_mf(r15_strenght))
+
+    r16_strenght = min([d1_mf_val_DH, d2_mf_val_DH, d3_mf_val_DH, d4_mf_val_DH])
+    VL_arr.append(0)
+    VH_arr.append(get_VH_mf(r16_strenght))
+
+    return VL_arr,VH_arr
+
+def defuzzify(VL_arr, VH_arr, D_arr):
+    sum=0
+    for l in range(0,16):
+        ceter_of_output = (VL_arr[l]+VH_arr)/2
+        prod = 1
+        for i in range(0,8):
+
+
+
 
 def noise_detect(m,n,old,new,window_size):
     for i in range(2, m+1):
@@ -84,19 +184,33 @@ def noise_detect(m,n,old,new,window_size):
 
             Darr = get_D_array( median_matrix)
 
+
+            d1_mf_val_DH, d1_mf_val_DL, d2_mf_val_DH, d2_mf_val_DL, d3_mf_val_DH, d3_mf_val_DL, d4_mf_val_DH, d4_mf_val_DL = get_all_mf_values(D)
+
             print("D array: ", Darr)
 
-def get_difference_low_mf(x):
-    c = 0
-    s = 250
-    sub_res = 0.5*(((x-c)/s)^2)
-    return math.exp(sub_res)
+def get_all_mf_values(D):
+    d1_mf_val_DH = get_DH_mf(D[0])
+    d1_mf_val_DL = get_DL_mf(D[0])
 
-def get_difference_high_mf(x):
-    c = 250
-    s = 250
-    sub_res = 0.5*(((x-c)/s)^2)
-    return math.exp(sub_res)
+    d2_mf_val_DH = get_DH_mf(D[1])
+    d2_mf_val_DL = get_DL_mf(D[1])
+
+    d3_mf_val_DH = get_DH_mf(D2])
+    d3_mf_val_DL = get_DL_mf(D[2])
+
+    d4_mf_val_DH = get_DH_mf(D[3])
+    d4_mf_val_DL = get_DL_mf(D[3])
+
+    return d1_mf_val_DH, d1_mf_val_DL, d2_mf_val_DH, d2_mf_val_DL, d3_mf_val_DH, d3_mf_val_DL, d4_mf_val_DH, d4_mf_val_DL
+
+def get_VH_mf(x):
+    a = 0.25
+    b = 0.75
+    c = 1
+    d = 1
+    
+    return reget_trapezoidal_mf(a, b, c, d)
 
 
 if __name__ == "__main__":
