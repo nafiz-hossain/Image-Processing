@@ -101,10 +101,6 @@ def main():
         updatedImage = np.array([[[0]*3]*(n+(matrix_size-1))]*(m+(matrix_size-1)))
         
         updatedImage[pos:m+pos , pos:n+pos, :] = img_input
-
-
-
-
         
         b_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
         g_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
