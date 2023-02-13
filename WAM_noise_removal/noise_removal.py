@@ -2,13 +2,14 @@ import cv2
 import numpy as np
 import math
 from skimage.util import random_noise, img_as_int
+import util
 
 
 T = 10
 WINDOW_SIZE = 7
 NOISE_PERCENTAGE = 10
-N = 3
-beta = 1.75
+N = 10
+beta = 3
 
 
 def manhattan_distance(i1, j1, i2, j2):
@@ -27,7 +28,7 @@ def get_uncorrupted_pixels_for_manhattan_distance(d, i, j, noise_detection_frame
 
     image_rows, image_columns = noise_detection_frame.shape
 
-    temp = np.zeros((15, 15))
+    # temp = np.zeros((15, 15))
 
     uncorrupted_pixel_count = 0
 
@@ -99,8 +100,7 @@ def get_uncorrupted_pixels_for_manhattan_distance(d, i, j, noise_detection_frame
 
 
 def get_alpha_value(base_pixel, neighbour_pixel):
-    alpha = 1 / \
-        (beta**manhattan_distance(base_pixel[0], base_pixel[1],
+    alpha = 1 / (beta**manhattan_distance(base_pixel[0], base_pixel[1],
          neighbour_pixel[0], neighbour_pixel[1]))
     return alpha
 
@@ -123,8 +123,10 @@ def weighted_arithmetic_mean(center_pixel, non_corrupted_pixels, image):
 def filter_image(noisy_image, noisy_pixels, noise_detection_frame):
 
     # print(noisy_pixels)
+    # print(noise_detection_frame)
     
-
+    # print(noisy_image)
+    
     for pixel in noisy_pixels:
         row = pixel[0]
         column = pixel[1]
@@ -140,9 +142,14 @@ def filter_image(noisy_image, noisy_pixels, noise_detection_frame):
 
             D = D+1
 
+        # print(f'age chilo value {noisy_image[row, column]}')
         noisy_image[row, column] = weighted_arithmetic_mean(
             center_pixel=pixel, non_corrupted_pixels=non_corrupted_pixels, image=noisy_image)
-
+        # print(f'pore hoise value {noisy_image[row, column]}')
+    
+    # print(noisy_image)
+    # cv2.imwrite('filtered_image_new.png', noisy_image)
+        
     return noisy_image
 
 
@@ -187,11 +194,8 @@ def is_noisy(pixel_value, opening_closing, closing_opening, s_max, s_min):
 
 
 def detect_and_filter_noise(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # cv2.imshow('noisy_image.jpg', gray)
-    new_image = gray.copy()
-
+    
+    new_image = image.copy()
 
     structuring_element_size = (5, 5)
     kernel = cv2.getStructuringElement(
@@ -205,13 +209,13 @@ def detect_and_filter_noise(image):
 
     (rows, columns) = new_image.shape
 
-    noise_detection_frame = np.empty((rows, columns), dtype=int)
+    noise_detection_frame = np.zeros((rows, columns), dtype=int)
 
     noisy_pixels = []
 
     for i in range(0, rows):
         for j in range(0, columns):
-            s_max, s_min = get_window_max_min_val(gray, i, j)
+            s_max, s_min = get_window_max_min_val(new_image, i, j)
             # print(s_max, s_min)
             noise_detection_frame[i, j] = is_noisy(
                 new_image[i, j], opening_closing[i, j], closing_opening[i, j], s_max, s_min)
@@ -221,28 +225,45 @@ def detect_and_filter_noise(image):
     # print(noise_detection_frame)
     # cv2.imshow("noisy image", gray)
 
-    return filter_image(noisy_image=gray, noisy_pixels=noisy_pixels,
+    return filter_image(noisy_image=new_image, noisy_pixels=noisy_pixels,
                  noise_detection_frame=noise_detection_frame)
 
     # cv2.imshow("noisy image", gray)
 
 
 if __name__ == "__main__":
-    lena_path = '/home/nowrin/Desktop/MS/Thesis/2nd_thesis/Image-Processing/WAM_noise_removal/sample_noise_grayscale_1.png'
-    # noisy_image = '/home/nowrin/Desktop/MS/Thesis/2nd_thesis/Image-Processing/sample.png'
-    image = cv2.imread(lena_path)
-    noisy_img = random_noise(image, mode='s&p', amount=NOISE_PERCENTAGE/100)
-    # cv2.imwrite('noisy_image.jpg', noisy_img)
 
-    noisy_img = img_as_int(noisy_img)
+    original_image = cv2.imread('sample_original_grayscale_1.png')
+    original_image_gray = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
 
-    print(noisy_img[10, 10])
+    noisy_img = random_noise(original_image, mode='s&p', amount=NOISE_PERCENTAGE/100)
+    noisy_img = np.array(255*noisy_img, dtype = 'uint8')
 
-    # cv2.imwrite('noisy_image.jpg', noisy_img)
+    gray_image = cv2.cvtColor(noisy_img, cv2.COLOR_BGR2GRAY)
 
-    filtered_image = detect_and_filter_noise(image=image)
+    cv2.imwrite('noisy_image.jpg', gray_image)
 
-    # cv2.imshow("noisy image", noisy_img)
-    cv2.imwrite('filtered_image.png', filtered_image)
+    print('corrupted image: psnr: ', util.calculate_psnr(original_image_gray, gray_image))
 
-    cv2.waitKey(0)
+
+    for i in range(0,100):
+
+        # gray_image = cv2.imread('filtered_image_new.png')   
+        # gray_image = cv2.cvtColor(gray_image, cv2.COLOR_BGR2GRAY) 
+
+        
+        # print('original gray image shape: ', original_image_gray.shape)
+
+        # print('input image shape: ', gray_image.shape)
+
+        filtered_image = detect_and_filter_noise(image=gray_image)
+        gray_image =  filtered_image
+
+        # print('filtered image psnr: ', util.calculate_psnr(original_image_gray, filtered_image))
+
+        # print('filtered image shape: ', filtered_image.shape)
+
+        # cv2.imshow("noisy image", noisy_img)
+        cv2.imwrite('filtered_image_%s.png'%i, filtered_image)
+
+        # cv2.waitKey(0)
