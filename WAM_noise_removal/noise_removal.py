@@ -3,6 +3,8 @@ import numpy as np
 import math
 from skimage.util import random_noise, img_as_int
 import util
+import time
+import matplotlib.pyplot as plt 
 
 
 T = 10
@@ -233,37 +235,68 @@ def detect_and_filter_noise(image):
 
 if __name__ == "__main__":
 
-    original_image = cv2.imread('sample_original_grayscale_1.png')
+    duration_arr = []
+    iterations = []
+    average_execution_time = []
+    psnr_values = []
+
+    original_image = cv2.imread('sample_noise_grayscale_1.png')
     original_image_gray = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
 
-    noisy_img = random_noise(original_image, mode='s&p', amount=NOISE_PERCENTAGE/100)
-    noisy_img = np.array(255*noisy_img, dtype = 'uint8')
+    img_original = cv2.imread('sample_original_grayscale_1.png', 0)
 
-    gray_image = cv2.cvtColor(noisy_img, cv2.COLOR_BGR2GRAY)
+    # noisy_img = random_noise(original_image, mode='s&p', amount=NOISE_PERCENTAGE/100)
+    # noisy_img = np.array(255*noisy_img, dtype = 'uint8')
 
-    cv2.imwrite('noisy_image.jpg', gray_image)
+    # gray_image = cv2.cvtColor(noisy_img, cv2.COLOR_BGR2GRAY)
 
-    print('corrupted image: psnr: ', util.calculate_psnr(original_image_gray, gray_image))
+    # cv2.imwrite('noisy_image.jpg', gray_image)
+
+    # print('corrupted image: psnr: ', util.calculate_psnr(original_image_gray, gray_image))
 
 
-    for i in range(0,100):
+    for i in range(0,10):
 
-        # gray_image = cv2.imread('filtered_image_new.png')   
-        # gray_image = cv2.cvtColor(gray_image, cv2.COLOR_BGR2GRAY) 
+        start_timer = round(time.time() * 1000)
+        filtered_image = detect_and_filter_noise(image=original_image_gray)
+        # gray_image =  filtered_image
 
-        
-        # print('original gray image shape: ', original_image_gray.shape)
-
-        # print('input image shape: ', gray_image.shape)
-
-        filtered_image = detect_and_filter_noise(image=gray_image)
-        gray_image =  filtered_image
-
-        # print('filtered image psnr: ', util.calculate_psnr(original_image_gray, filtered_image))
-
-        # print('filtered image shape: ', filtered_image.shape)
-
-        # cv2.imshow("noisy image", noisy_img)
         cv2.imwrite('filtered_image_%s.png'%i, filtered_image)
 
+        stop_timer = round(time.time() * 1000)        
+        duration_in_second = stop_timer-start_timer
+        duration_arr.append(duration_in_second)
+        iterations.append(i)
+
         # cv2.waitKey(0)
+    average_execution_time.append(np.average(duration_arr)/1000)
+
+    psnr_values.append(util.calculate_psnr(img_original, filtered_image))
+
+    plt.plot(iterations, average_execution_time, color = 'g', linestyle = 'dashed',
+            marker = 'o',label = "Average execution time")
+    
+    plt.xticks(rotation = 10)
+    plt.xlabel('Iterations')
+    plt.ylabel('Average execution time (second)')
+    plt.title('Median Filtering', fontsize = 20)
+    plt.grid()
+    plt.legend()
+    plt.show()
+    plt.savefig('execution_time_plot.png')
+
+
+    plt.plot(iterations, psnr_values, color = 'g', linestyle = 'dashed',
+            marker = 'o',label = "MSE values")
+    
+    plt.xticks(rotation = 10)
+    plt.xlabel('Iterations')
+    plt.ylabel('MSE values')
+    plt.title('MSE calculation', fontsize = 20)
+    plt.grid()
+    plt.legend()
+    plt.show()
+    plt.savefig('psnr_values.png')
+
+
+

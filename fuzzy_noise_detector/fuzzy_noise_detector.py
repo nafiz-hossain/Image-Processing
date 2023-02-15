@@ -3,7 +3,7 @@ import cv2
 import math
 import util
 import time
-
+import matplotlib.pyplot as plt 
 
 
 def get_trapezoidal_mf(x,a, b, c, d):
@@ -268,9 +268,10 @@ if __name__ == "__main__":
 
     average_execution_time = []
     psnr_values = []
+    duration_arr = []
     
-    img_input = cv2.imread('sample_noise_grayscale_1.png', 1)
-    img_original = cv2.imread('sample_original_grayscale_1.png', 1)
+    img_input = cv2.imread('sample_noise_1.png', 1)
+    img_original = cv2.imread('sample_original_1.png', 1)
     
     m, n, c = img_input.shape
     matrix_size = 5
@@ -289,9 +290,9 @@ if __name__ == "__main__":
 
     iterations = []
 
-    for i in range(0,1):
+    for i in range(0,3):
         print('iteration: ',i)
-        iterations.append(i)
+        
         b, g, r = cv2.split(updatedImage)
         
         start_timer = round(time.time() * 1000)
@@ -303,6 +304,7 @@ if __name__ == "__main__":
         stop_timer = round(time.time() * 1000)        
         duration_in_second = stop_timer-start_timer
         duration_arr.append(duration_in_second)
+        iterations.append(i)
 
     final_img = cv2.merge((b_final,g_final,r_final))
 
@@ -317,13 +319,27 @@ if __name__ == "__main__":
             marker = 'o',label = "Average execution time")
     
     plt.xticks(rotation = 10)
-    plt.xlabel('Window size')
+    plt.xlabel('Iterations')
     plt.ylabel('Average execution time (second)')
     plt.title('Median Filtering', fontsize = 20)
     plt.grid()
     plt.legend()
     plt.show()
     plt.savefig('execution_time_plot.png')
+
+
+    plt.plot(iterations, psnr_values, color = 'g', linestyle = 'dashed',
+            marker = 'o',label = "MSE values")
+    
+    plt.xticks(rotation = 10)
+    plt.xlabel('Iterations')
+    plt.ylabel('MSE values')
+    plt.title('MSE calculation', fontsize = 20)
+    plt.grid()
+    plt.legend()
+    plt.show()
+    plt.savefig('psnr_values.png')
+
 
 
 
