@@ -95,8 +95,8 @@ def main():
 
     #print(os.path.exists('samplev2.png'))    
     #take input by cv2
-    img_input = cv2.imread('sample_noise_grayscale_1.png', 0)
-    img_original = cv2.imread('sample_original_grayscale_1.png', 0)
+    img_input = cv2.imread('noisy_image.jpg', 0)
+    img_original = cv2.imread('5.3.01.tiff', 0)
 
     print(img_input.shape)
     m, n = img_input.shape

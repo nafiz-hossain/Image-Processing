@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 T = 10
 WINDOW_SIZE = 7
-NOISE_PERCENTAGE = 10
+NOISE_PERCENTAGE = 90
 N = 10
 beta = 3
 
@@ -245,20 +245,20 @@ if __name__ == "__main__":
 
     img_original = cv2.imread('sample_original_grayscale_1.png', 0)
 
-    # noisy_img = random_noise(original_image, mode='s&p', amount=NOISE_PERCENTAGE/100)
-    # noisy_img = np.array(255*noisy_img, dtype = 'uint8')
+    original_image = cv2.imread('misc/5.3.01.tiff', 0)
+    noisy_img = random_noise(original_image, mode='s&p', amount=NOISE_PERCENTAGE/100)
+    gray_noisy_image = np.array(255*noisy_img, dtype = 'uint8')
+    # gray_noisy_image = cv2.cvtColor(noisy_img, cv2.COLOR_BGR2GRAY)
 
-    # gray_image = cv2.cvtColor(noisy_img, cv2.COLOR_BGR2GRAY)
-
-    # cv2.imwrite('noisy_image.jpg', gray_image)
+    cv2.imwrite('noisy_image.jpg', gray_noisy_image)
 
     # print('corrupted image: psnr: ', util.calculate_psnr(original_image_gray, gray_image))
 
 
-    for i in range(0,10):
+    for i in range(0,3):
 
         start_timer = round(time.time() * 1000)
-        filtered_image = detect_and_filter_noise(image=original_image_gray)
+        filtered_image = detect_and_filter_noise(image=gray_noisy_image)
         # gray_image =  filtered_image
 
         cv2.imwrite('filtered_image_%s.png'%i, filtered_image)
@@ -271,7 +271,7 @@ if __name__ == "__main__":
         # cv2.waitKey(0)
     average_execution_time.append(np.average(duration_arr)/1000)
 
-    psnr_values.append(util.calculate_psnr(img_original, filtered_image))
+    psnr_values.append(util.calculate_psnr(original_image, filtered_image))
 
     plt.plot(iterations, average_execution_time, color = 'g', linestyle = 'dashed',
             marker = 'o',label = "Average execution time")
@@ -287,12 +287,12 @@ if __name__ == "__main__":
 
 
     plt.plot(iterations, psnr_values, color = 'g', linestyle = 'dashed',
-            marker = 'o',label = "MSE values")
+            marker = 'o',label = "PSNR values")
     
     plt.xticks(rotation = 10)
     plt.xlabel('Iterations')
-    plt.ylabel('MSE values')
-    plt.title('MSE calculation', fontsize = 20)
+    plt.ylabel('PRNR values')
+    plt.title('PSNR calculation', fontsize = 20)
     plt.grid()
     plt.legend()
     plt.show()
