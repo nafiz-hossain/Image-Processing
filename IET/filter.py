@@ -59,7 +59,7 @@ class SecondDetectionUnit:
     def __calculate_pixel_wise_count(self, image):
         self.histogram, bin_edges = np.histogram(image, bins=256, range=(0, 255))
         
-    def __intensity_of_background_and_object(self, s):
+    def __mean_intensity_of_background_and_object(self, s):
         lob = 0
         hor = 0
         for i in range(0, s+1):
@@ -85,43 +85,46 @@ class SecondDetectionUnit:
     def __membership_function(self, pixel, s, w):
         if pixel<s:
             mb = self.threshold_wise_intensity[s]['mb']
-            # print(mb)
-            return e**((abs(pixel-mb)*(-1))/w)
+            return e**(abs(pixel-mb)*(-1)/w)
         else:        
             mo = self.threshold_wise_intensity[s]['mo']
-            # print(mo)
-            return e**((abs(pixel-mo)*(-1))/w)
+            return e**(abs(pixel-mo)*(-1)/w)
 
 
     def noise_detection(self, noisy_image):
         self.__calculate_pixel_wise_count(image=noisy_image)
 
         for i in range(0, 255):
-            self.__intensity_of_background_and_object(s=i)
+            self.__mean_intensity_of_background_and_object(s=i)
         
         rows, columns = noisy_img.shape
 
         valid_ws = list()
         
         for w in range(224, 225):
+            invalid_w = False
             
             for s in range(0, 255):
-                # membership_func = lambda x: self.__membership_function(x, s, w)
-                # vectorized_membership = np.vectorize(membership_func)
-                # matrix_with_membership = vectorized_membership(noisy_image)
+                membership_func = lambda x: self.__membership_function(x, s, w)
+                vectorized_membership = np.vectorize(membership_func)
+                matrix_with_membership = vectorized_membership(noisy_image)
 
-                matrix_with_membership = np.empty((rows, columns))
-                invalid_w = False
-                for i in range(0, rows):
-                    for j in range(0, columns):
-                        matrix_with_membership[i][j] = self.__membership_function(pixel=noisy_image[i][j], s=s, w=w)
-                        if matrix_with_membership[i][j]< 0.5:
-                            invalid_w = True
-                            break
-                    if invalid_w:
-                        break
-                if invalid_w:
+                if(matrix_with_membership.any()<0.5):
+                    invalid_w = True
                     break
+
+                # membership = np.empty((rows, columns))
+                # invalid_w = False
+                # for i in range(0, rows):
+                #     for j in range(0, columns):
+                #         membership[i][j] = self.__membership_function(pixel=noisy_image[i][j], s=s, w=w)
+                #         if membership[i][j]< 0.5:
+                #             invalid_w = True
+                #             break
+                #     if invalid_w:
+                #         break
+                # if invalid_w:
+                #     break
             if  invalid_w:
                 continue
             valid_ws.append(w)
