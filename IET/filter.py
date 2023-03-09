@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from math import e
 import datetime
+import statistics
 
 NOISE_PERCENTAGE = 10
 
@@ -52,12 +53,18 @@ class FirstDetectionUnit:
         return N_I
 
 class SecondDetectionUnit:
-    histogram = np.zeros(256)
-    threshold_wise_intensity = dict()
+    
+    def  __init__(self, noisy_image):
+        self.noisy_image = noisy_image
+        self.histogram, bin_edges = np.histogram(noisy_image, bins=256, range=(0, 255))
+        x, y = noisy_image.shape
+        self.cardinality = x*y
+        self.threshold_wise_intensity = dict()
 
-
-    def __calculate_pixel_wise_count(self, image):
-        self.histogram, bin_edges = np.histogram(image, bins=256, range=(0, 255))
+        for i in range(0, 255):
+            self.__mean_intensity_of_background_and_object(s=i)
+        
+        
         
     def __mean_intensity_of_background_and_object(self, s):
         lob = 0
@@ -91,44 +98,94 @@ class SecondDetectionUnit:
             return e**(abs(pixel-mo)*(-1)/w)
 
 
-    def noise_detection(self, noisy_image):
-        self.__calculate_pixel_wise_count(image=noisy_image)
+    def __background_membership_function(self, pixel, s, w):
+        if pixel<s:
+            mb = self.threshold_wise_intensity[s]['mb']
+            return e**(abs(pixel-mb)*(-1)/w)                
+        return 0
 
-        for i in range(0, 255):
-            self.__mean_intensity_of_background_and_object(s=i)
-        
-        rows, columns = noisy_img.shape
+
+    def __object_membership_function(self, pixel, s, w):
+        if pixel>=s:
+            mo = self.threshold_wise_intensity[s]['mo']
+            return e**(abs(pixel-mo)*(-1)/w)
+        return 0
+
+
+    def __calculate_entropy(self, s, w):
+        summation = 0
+        for pixel in range(0, 256):
+            hesitation = (1-self.__background_membership_function(pixel=pixel, s=s, w=w)) * (1-self.__object_membership_function(pixel=pixel, s=s, w=w))
+            summation = summation + (self.histogram[pixel]*hesitation)
+        return (1/self.cardinality)*summation
+
+
+    def __membership_function_for_noise_detection(self, pixel, a, b):
+        if abs(pixel - a) < a:
+            return 0
+        elif abs(pixel - b) > b:
+            return 1
+        elif a >= abs(pixel - (a+b)/2) and abs(pixel - (a+b)/2)<b:
+            return (pixel-a)/(b-a)
+
+
+    def __noise_detection_unit(self, t):
+        a = self.threshold_wise_intensity[t]['mb']
+        b = self.threshold_wise_intensity[t]['mo']
+
+        membership_func = lambda x: self.__membership_function_for_noise_detection(x, a, b)
+        vectorized_membership = np.vectorize(membership_func)
+        matrix_with_membership = vectorized_membership(self.noisy_image)
+
+        return matrix_with_membership
+
+    
+    def noise_detection(self):
+        rows, columns = self.noisy_image.shape
 
         valid_ws = list()
         
         for w in range(224, 225):
             invalid_w = False
+
+            print(w)
             
-            for s in range(0, 255):
+            for s in range(0, 1):
                 membership_func = lambda x: self.__membership_function(x, s, w)
                 vectorized_membership = np.vectorize(membership_func)
-                matrix_with_membership = vectorized_membership(noisy_image)
+                matrix_with_membership = vectorized_membership(self.noisy_image)
 
                 if(matrix_with_membership.any()<0.5):
                     invalid_w = True
                     break
 
-                # membership = np.empty((rows, columns))
-                # invalid_w = False
-                # for i in range(0, rows):
-                #     for j in range(0, columns):
-                #         membership[i][j] = self.__membership_function(pixel=noisy_image[i][j], s=s, w=w)
-                #         if membership[i][j]< 0.5:
-                #             invalid_w = True
-                #             break
-                #     if invalid_w:
-                #         break
-                # if invalid_w:
-                #     break
+                
             if  invalid_w:
                 continue
             valid_ws.append(w)
         print(valid_ws)
+        entropy_list = list()
+        for s in range(0, 255):
+            entropies = list()
+            for w in valid_ws:
+                entropies.append(self.__calculate_entropy(s, w))
+
+            vals, counts = np.unique(entropies, return_counts=True)
+            mode_value = np.argwhere(counts == np.max(counts))
+            modals = vals[mode_value].flatten().tolist()
+            if len(modals)==0:
+                least_entropy =  statistics.median(entropies)
+            else:
+                least_entropy = modals[0]
+            entropy_list.append(least_entropy)
+        entropy_array = np.array(entropy_list)
+        minimum_index = entropy_array.argmin()
+        print(minimum_index)
+
+        return self.__noise_detection_unit(t=minimum_index)
+
+
+    
 
 if __name__ == "__main__":
     # start_time = datetime.now()
@@ -146,9 +203,15 @@ if __name__ == "__main__":
     # padded_noisy_image[int(padding):int(-1 * padding), int(padding):int(-1 * padding)] = gray_noisy_image
     # print(gray_noisy_image)
     # print(x_shape,y_shape)
+    first_detection = FirstDetectionUnit().first_noise_detection(noisy_image=gray_noisy_image)
+    second_detection = SecondDetectionUnit(noisy_image=gray_noisy_image).noise_detection()
 
-    second_detection_model = SecondDetectionUnit()
-    second_detection_model.noise_detection(noisy_image=gray_noisy_image)
 
+    '''noise removal'''
+    rows, columns = gray_noisy_image.shape 
+    for i in range(1, rows):
+        for j in range(1, columns):
+            m = 
+    
     
     
