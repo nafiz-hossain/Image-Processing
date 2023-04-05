@@ -271,7 +271,7 @@ if __name__ == "__main__":
         # cv2.waitKey(0)
     average_execution_time.append(np.average(duration_arr)/1000)
 
-    psnr_values.append(util.calculate_psnr(original_image, filtered_image))
+    psnr_values.append(util.mse(original_image, filtered_image))
 
     plt.plot(iterations, average_execution_time, color = 'g', linestyle = 'dashed',
             marker = 'o',label = "Average execution time")

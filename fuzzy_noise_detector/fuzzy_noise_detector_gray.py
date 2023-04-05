@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from skimage.util import random_noise, img_as_int
 
 NOISE_PERCENTAGE = 10
+NUMBER_OF_ITERATIONS = 5
 
 def get_trapezoidal_mf(x,a, b, c, d):
     temp1 = (x-a)/(b-a)
@@ -276,60 +277,53 @@ if __name__ == "__main__":
     noisy_img = random_noise(img_original, mode='s&p',
                              amount=NOISE_PERCENTAGE/100)
     img_input = np.array(255*noisy_img, dtype='uint8')
-    
+    cv2.imwrite('noisy_image.png', img_input)
     
     # img_input = cv2.imread('sample_noise_1.png', 1)
     # img_original = cv2.imread('sample_original_1.png', 1)
     
-    m, n, c = img_input.shape
+    m, n = img_input.shape
     matrix_size = 5
     pos= int(matrix_size/2)
     
     print('m= ', m)
     print('n= ', n)
-    print('c= ', c)
-
-    updatedImage = np.array([[[0]*3]*(n+(matrix_size-1))]*(m+(matrix_size-1)))
-    updatedImage[pos:m+pos , pos:n+pos, :] = img_input
+    
+    updatedImage = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
+    updatedImage[pos:m+pos , pos:n+pos] = img_input
 
     b_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
-    g_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
-    r_new = np.zeros([m+(matrix_size-1), n+(matrix_size-1)])
-
+    
     iterations = []
 
-    for i in range(0,3):
+    for i in range(0, NUMBER_OF_ITERATIONS):
         print('iteration: ',i)
         
-        b, g, r = cv2.split(updatedImage)
         
         start_timer = round(time.time() * 1000)
 
-        b_final= noise_detect(m,n,b,b_new,matrix_size)
-        g_final= noise_detect(m,n,g,g_new,matrix_size)
-        r_final= noise_detect(m,n,r,r_new,matrix_size)
-
+        b_final= noise_detect(m,n,updatedImage,b_new,matrix_size)
+        final_img = b_final
+        
         stop_timer = round(time.time() * 1000)        
         duration_in_second = stop_timer-start_timer
-        duration_arr.append(duration_in_second)
+        duration_arr.append(duration_in_second/1000)
         iterations.append(i)
+        mse_values.append(util.mse(img_original, final_img)) 
+    
+    # average_execution_time.append(np.average(duration_arr)/1000)
 
-    final_img = cv2.merge((b_final,g_final,r_final))
-
-
-    average_execution_time.append(np.average(duration_arr)/1000)
-
-    mse_values.append(util.mse(img_original, final_img))
+    
 
     cv2.imwrite('filtered_image.png', final_img)
 
-    plt.plot(iterations, average_execution_time, color = 'g', linestyle = 'dashed',
+    plt.plot(iterations, duration_arr, color = 'g', linestyle = 'dashed',
             marker = 'o',label = "Average execution time")
     
     plt.xticks(rotation = 10)
     plt.xlabel('Iterations')
     plt.ylabel('Average execution time (second)')
-    plt.title('Median Filtering', fontsize = 20)
+    plt.title('execution time fuzzy detector gray', fontsize = 20)
     plt.grid()
     plt.legend()
     plt.show()
@@ -342,7 +336,7 @@ if __name__ == "__main__":
     plt.xticks(rotation = 10)
     plt.xlabel('Iterations')
     plt.ylabel('MSE values')
-    plt.title('MSE calculation', fontsize = 20)
+    plt.title('MSE calculation fuzzy detector gray', fontsize = 20)
     plt.grid()
     plt.legend()
     plt.show()

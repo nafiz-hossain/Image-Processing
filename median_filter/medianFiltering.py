@@ -36,9 +36,9 @@ def mse(imageA, imageB):
     err /= float(imageA.shape[0] * imageA.shape[1])
     return err
 
-def Calculate_psnr(originalImage, filteredImage):
-    # return cv2.PSNR(originalImage,filteredImage)
-    return mse(originalImage, filteredImage)
+def calculate_psnr(originalImage, filteredImage):
+    return cv2.PSNR(originalImage,filteredImage)
+    # return mse(originalImage, filteredImage)
 
 def medianFiltering(m,n,old,new,window_size):
     window_half = int(window_size/2)
@@ -132,7 +132,7 @@ def main():
         # print('final_b ', b_final)
         # cv2.imwrite('filtered.png', final_img)
         cv2.imwrite('filtered_%s.png'%filename, final_img)
-        psnr_values.append(Calculate_psnr(img_original, final_img))
+        psnr_values.append(mse(img_original, final_img))
 
         print('##Duration##',duration_arr)
         #print('##matrix_size_array##',matrix_size_array)
