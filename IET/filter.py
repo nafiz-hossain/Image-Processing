@@ -114,16 +114,18 @@ class SecondDetectionUnit:
             return e**(abs(pixel-mo)*(-1)/w)
 
     def __background_membership_function(self, pixel, s, w):
+        mb = self.threshold_wise_intensity[s]['mb']
+        mo = self.threshold_wise_intensity[s]['mo']    
         if pixel < s:
-            mb = self.threshold_wise_intensity[s]['mb']
             return e**(abs(pixel-mb)*(-1)/w)
-        return 0
+        return e**(abs(pixel-mo)*(-1)/w)
 
     def __object_membership_function(self, pixel, s, w):
+        mo = self.threshold_wise_intensity[s]['mo']
+        mb = self.threshold_wise_intensity[s]['mb']
         if pixel >= s:
-            mo = self.threshold_wise_intensity[s]['mo']
             return e**(abs(pixel-mo)*(-1)/w)
-        return 0
+        return e**(abs(pixel-mb)*(-1)/w)
 
     def __calculate_entropy(self, s, w):
         summation = 0
@@ -161,7 +163,7 @@ class SecondDetectionUnit:
 
             print(w)
 
-            for s in range(0, 100):
+            for s in range(0, 255):
                 def membership_func(
                     x): return self.__membership_function(x, s, w)
                 vectorized_membership = np.vectorize(membership_func)
