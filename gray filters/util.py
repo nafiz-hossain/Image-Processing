@@ -4,7 +4,7 @@ import math
 import numpy as np
 import csv
 
-NOISE_PERCENTAGES = [70, 90]
+NOISE_PERCENTAGES = [10]
 NUMBER_OF_ITERATIONS = 3
 
 def mse(imageA, imageB):
