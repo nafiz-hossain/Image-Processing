@@ -202,7 +202,8 @@ class SecondDetectionUnit:
 if __name__ == "__main__":
     noise_percentages = util.NOISE_PERCENTAGES
     print('noise percentages: ', noise_percentages)
-    original_image = cv2.imread('5.3.01.tiff', 0)
+    original_image = cv2.imread('image2.jpg', 0)
+    print(original_image.shape)
 
     mse_with_noises = []
     psnr_with_noises = []

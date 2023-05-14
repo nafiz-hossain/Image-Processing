@@ -80,9 +80,9 @@ def medianFiltering(m,n,old,new,window_size):
 
 def main():
 
-    noise_percentages = [10, 30, 50, 70, 90]
+    noise_percentages = [10,  50, 90]
     print('noise percentages: ', noise_percentages)
-    original_image = cv2.imread('5.3.01.tiff', 0)
+    original_image = cv2.imread('image2.jpg', 0)
 
     mse_with_noises = []
     psnr_with_noises = []
@@ -98,7 +98,7 @@ def main():
         matrix_size_array = []
         psnr_values = []
         mse_values = []
-        matrix_size = 5
+        matrix_size = 1
         df_source1 = pd.DataFrame([])
         df_source_psnr = pd.DataFrame([])
         iterations = []

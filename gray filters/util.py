@@ -4,8 +4,8 @@ import math
 import numpy as np
 import csv
 
-NOISE_PERCENTAGES = [ 50, 90]
-NUMBER_OF_ITERATIONS = 3
+NOISE_PERCENTAGES = [10, 50, 90]
+NUMBER_OF_ITERATIONS = 1
 
 def mse(imageA, imageB):
     err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)

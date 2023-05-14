@@ -5,7 +5,8 @@ from skimage.util import random_noise, img_as_int
 import util
 import time
 import matplotlib.pyplot as plt 
-
+import skfuzzy as fuzz
+from skimage.morphology import disk, closing, opening
 
 T = 10
 WINDOW_SIZE = 7
@@ -200,14 +201,23 @@ def detect_and_filter_noise(image):
     new_image = image.copy()
 
     structuring_element_size = (5, 5)
-    kernel = cv2.getStructuringElement(
-        cv2.MORPH_RECT, structuring_element_size)
+    # kernel = cv2.getStructuringElement(
+    #     cv2.MORPH_RECT, structuring_element_size)
 
-    opening = cv2.morphologyEx(new_image, cv2.MORPH_OPEN, kernel)
-    opening_closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
+    # opening = cv2.morphologyEx(new_image, cv2.MORPH_OPEN, kernel)
+    # opening_closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
 
-    closing = cv2.morphologyEx(new_image, cv2.MORPH_CLOSE, kernel)
-    closing_opening = cv2.morphologyEx(closing, cv2.MORPH_OPEN, kernel)
+    # closing = cv2.morphologyEx(new_image, cv2.MORPH_CLOSE, kernel)
+    # closing_opening = cv2.morphologyEx(closing, cv2.MORPH_OPEN, kernel)
+
+    kernel = disk(5)
+    
+    closed = closing(new_image, kernel)
+    closing_opening = opening(closed, kernel)
+
+    opened = opening(new_image, kernel)
+    opening_closing = closing(opened, kernel)
+
 
     (rows, columns) = new_image.shape
 
@@ -235,10 +245,10 @@ def detect_and_filter_noise(image):
 
 if __name__ == "__main__":
 
-    # noise_percentages = util.NOISE_PERCENTAGES
-    noise_percentages = [10,30,50,70, 90]
+    noise_percentages = util.NOISE_PERCENTAGES
+    # noise_percentages = [50]
     print('noise percentages: ', noise_percentages)
-    original_image = cv2.imread('5.3.01.tiff', 0)
+    original_image = cv2.imread('image2.jpg', 0)
 
     mse_with_noises = []
     psnr_with_noises = []
@@ -269,7 +279,9 @@ if __name__ == "__main__":
             psnr_values.append(util.psnr(mse_value))
 
         util.plot_graphs(p, 'wam', filtered_image, iterations, mse_values, psnr_values, duration_arr)
-        
+        cv2.imshow('Example_Image.png', filtered_image)
+        cv2.waitKey(0)
+
         mse_avg = np.average(mse_values)
         psnr_avg = np.average(psnr_values)
         avg_duration = np.average(duration_arr)

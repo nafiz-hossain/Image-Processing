@@ -5,7 +5,7 @@ import util
 NOISE_PERCENTAGES = util.NOISE_PERCENTAGES
 
 if __name__ == "__main__":
-    original_image = cv2.imread('5.3.01.tiff', 0)
+    original_image = cv2.imread('image2.jpg', 0)
     for i in NOISE_PERCENTAGES:
         noisy_img = random_noise(original_image, mode='s&p',
                                 amount=i/100)
